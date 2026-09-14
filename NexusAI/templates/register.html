@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register SME - NexusAI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: radial-gradient(circle at 50% 40%, rgba(0, 242, 254, 0.12) 0%, rgba(3, 7, 18, 1) 70%);
+        }
+        .auth-card {
+            width: 460px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="glass-card auth-card">
+            <div style="text-align:center; margin-bottom:24px;">
+                <div class="brand-logo-wrapper" style="margin:0 auto 16px auto; width:54px; height:54px;">
+                    <svg class="brand-logo-svg" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:54px; height:54px;">
+                        <circle class="logo-orbit" cx="22" cy="22" r="18" stroke="url(#logo_grad_1_reg)" stroke-width="2" stroke-dasharray="8 4"/>
+                        <circle class="logo-core" cx="22" cy="22" r="10" fill="url(#logo_grad_2_reg)"/>
+                        <path d="M17 22L21 26L27 18" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="logo_grad_1_reg" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#00f2fe"/>
+                                <stop offset="0.5" stop-color="#38bdf8"/>
+                                <stop offset="1" stop-color="#6366f1"/>
+                            </linearGradient>
+                            <linearGradient id="logo_grad_2_reg" x1="12" y1="12" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#00f2fe"/>
+                                <stop offset="1" stop-color="#818cf8"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="logo-glow-ring" style="width:50px; height:50px;"></div>
+                </div>
+                <h2 style="font-size:22px; font-weight:800;">Register Your SME</h2>
+                <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Set up your NexusAI Business Operating System</p>
+            </div>
+
+            {% if error %}
+            <div style="background:rgba(244, 63, 94, 0.15); border:1px solid var(--accent-rose); color:var(--accent-rose); padding:10px 14px; border-radius:var(--radius-sm); font-size:13px; margin-bottom:20px;">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('register') }}" method="POST">
+                <div class="form-group">
+                    <label>Company / SME Name</label>
+                    <input type="text" name="company_name" class="form-control" placeholder="e.g. Apex Tech India" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="johndoe" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="john@company.in" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; margin-top:8px;">
+                    <i class="bi bi-person-plus-fill"></i> Complete Onboarding
+                </button>
+            </form>
+
+            <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--text-muted);">
+                Already registered? <a href="{{ url_for('login') }}" style="color:var(--accent-cyan); text-decoration:none; font-weight:600;">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+
+{% block title %}AI Email Writer - NexusAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI Email Writer</h1>
+        <p class="page-subtitle">Generate professional B2B emails for payment reminders, proposals, and updates.</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Configuration Card -->
+    <div class="glass-card">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-pencil-square" style="color:var(--accent-cyan);"></i> Email Generator Controls
+        </h3>
+
+        <div class="form-group">
+            <label>Recipient / Customer</label>
+            <input type="text" id="emailTarget" class="form-control" placeholder="e.g. ABC Technologies" value="ABC Technologies">
+        </div>
+
+        <div class="form-group">
+            <label>Email Topic / Purpose</label>
+            <select id="emailTopic" class="form-control">
+                <option value="payment_reminder">Payment Reminder (Overdue Invoice)</option>
+                <option value="proposal">Enterprise Service Proposal & Quote</option>
+                <option value="general_update">Quarterly Service & Account Update</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Additional Context (Optional)</label>
+            <textarea id="emailContext" class="form-control" rows="3" placeholder="e.g. Include 10% early payment discount if cleared within 5 days..."></textarea>
+        </div>
+
+        <button onclick="generateEmailDraft()" id="btnGenEmail" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+            <i class="bi bi-magic"></i> Generate Professional Email Draft
+        </button>
+    </div>
+
+    <!-- Output Draft -->
+    <div class="glass-card">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-envelope-check-fill" style="color:var(--accent-purple);"></i> Generated Email Draft
+        </h3>
+
+        <div class="form-group">
+            <label>Recipient Email Address (To:)</label>
+            <input type="email" id="emailToAddress" class="form-control" placeholder="e.g. client@company.com" value="billing@abctechnologies.com">
+        </div>
+
+        <div class="form-group">
+            <label>Subject Line</label>
+            <input type="text" id="emailSubject" class="form-control" value="Friendly Reminder: Outstanding Invoice Payment - Nexus Tech Solutions">
+        </div>
+
+        <div class="form-group">
+            <label>Email Body</label>
+            <textarea id="emailBody" class="form-control" rows="10">Dear ABC Technologies,
+
+I hope this email finds you well.
+
+We are following up regarding outstanding invoice details with Nexus Tech Solutions. According to our financial records, the payment remains pending as of today.
+
+Kindly review the invoice details attached and arrange for remittance at your earliest convenience.
+
+Warm regards,
+Finance Operations Team
+Nexus Tech Solutions</textarea>
+        </div>
+
+        <div id="emailActionStatus" style="display:none; margin-top:12px; padding:10px; border-radius:var(--radius-sm); font-size:13px; font-weight:600; text-align:center;"></div>
+
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <button onclick="copyEmailText()" class="btn btn-secondary" style="flex:1; justify-content:center;">
+                <i class="bi bi-copy"></i> Copy to Clipboard
+            </button>
+            <button onclick="simulateSendEmail()" class="btn btn-primary" style="flex:1; justify-content:center;">
+                <i class="bi bi-send-fill"></i> Send Email
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function generateEmailDraft() {
+    const target = document.getElementById('emailTarget').value.trim();
+    const topic = document.getElementById('emailTopic').value;
+    const context = document.getElementById('emailContext').value.trim();
+    const btn = document.getElementById('btnGenEmail');
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="bi bi-cpu spin"></i> Generating Draft...`;
+
+    try {
+        const res = await fetch('/api/ai/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target, topic, context })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-magic"></i> Generate Professional Email Draft`;
+
+        document.getElementById('emailSubject').value = data.subject;
+        document.getElementById('emailBody').value = data.body;
+        if (data.recipient_email) {
+            document.getElementById('emailToAddress').value = data.recipient_email;
+        }
+    } catch (e) {
+        console.error(e);
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-magic"></i> Generate Professional Email Draft`;
+    }
+}
+
+function showEmailStatus(msg, isSuccess = true) {
+    const statusDiv = document.getElementById('emailActionStatus');
+    if (!statusDiv) return;
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = isSuccess ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)';
+    statusDiv.style.color = isSuccess ? 'var(--accent-emerald)' : 'var(--accent-rose)';
+    statusDiv.style.border = isSuccess ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)';
+    statusDiv.innerHTML = msg;
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 4000);
+}
+
+function copyEmailText() {
+    const toEmail = document.getElementById('emailToAddress').value.trim();
+    const subject = document.getElementById('emailSubject').value;
+    const body = document.getElementById('emailBody').value;
+    const toHeader = toEmail ? `To: ${toEmail}\n` : '';
+    navigator.clipboard.writeText(`${toHeader}Subject: ${subject}\n\n${body}`);
+    showEmailStatus('<i class="bi bi-check-circle-fill"></i> Email recipient, subject & body copied to clipboard!');
+}
+
+function simulateSendEmail() {
+    const toEmail = document.getElementById('emailToAddress').value.trim();
+    const subjectStr = document.getElementById('emailSubject').value;
+    const bodyStr = document.getElementById('emailBody').value;
+    
+    // Copy to clipboard
+    const toHeader = toEmail ? `To: ${toEmail}\n` : '';
+    navigator.clipboard.writeText(`${toHeader}Subject: ${subjectStr}\n\n${bodyStr}`);
+    showEmailStatus('<i class="bi bi-send-check-fill"></i> Opening default email app pre-filled to ' + (toEmail || 'recipient') + '...');
+
+    // Trigger mailto link for default email client
+    setTimeout(() => {
+        const subject = encodeURIComponent(subjectStr);
+        const body = encodeURIComponent(bodyStr);
+        const mailtoTarget = toEmail ? encodeURIComponent(toEmail) : '';
+        window.location.href = `mailto:${mailtoTarget}?subject=${subject}&body=${body}`;
+    }, 300);
+}
+</script>
+{% endblock %}

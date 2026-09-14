@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - NexusAI OS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Business Operating Center</h1>
+        <p class="page-subtitle">Real-time enterprise metrics, AI insights, and operational priorities.</p>
+    </div>
+    <div style="display:flex; gap:12px;">
+        <button onclick="submitAiQuery('What should I focus on today?')" class="btn btn-primary">
+            <i class="bi bi-cpu-fill"></i> Ask AI Assistant
+        </button>
+    </div>
+</div>
+
+<!-- 1. Key Metrics Grid -->
+<div class="grid-4">
+    <div class="glass-card metric-card">
+        <div class="metric-header">
+            <span class="metric-title">Total Revenue</span>
+            <div class="metric-icon"><i class="bi bi-currency-rupee"></i></div>
+        </div>
+        <div class="metric-value">{{ metrics.revenue | inr }}</div>
+        <div class="metric-footer">
+            <span class="trend-up"><i class="bi bi-arrow-up-right"></i> +{{ sales_ml.growth_percentage }}%</span>
+            <span style="color:var(--text-muted)">vs previous period</span>
+        </div>
+    </div>
+
+    <div class="glass-card metric-card">
+        <div class="metric-header">
+            <span class="metric-title">Total Expenses</span>
+            <div class="metric-icon" style="color:var(--accent-rose); background:rgba(244, 63, 94, 0.1);"><i
+                    class="bi bi-wallet2"></i></div>
+        </div>
+        <div class="metric-value">{{ metrics.expenses | inr }}</div>
+        <div class="metric-footer">
+            <span style="color:var(--accent-amber); font-weight:600;"><i class="bi bi-dash"></i> Steady</span>
+            <span style="color:var(--text-muted)">Operating margin</span>
+        </div>
+    </div>
+
+    <div class="glass-card metric-card">
+        <div class="metric-header">
+            <span class="metric-title">Net Profit</span>
+            <div class="metric-icon" style="color:var(--accent-emerald); background:rgba(16, 185, 129, 0.1);"><i
+                    class="bi bi-graph-up-arrow"></i></div>
+        </div>
+        <div class="metric-value">{{ metrics.net_profit | inr }}</div>
+        <div class="metric-footer">
+            <span class="trend-up"><i class="bi bi-pie-chart-fill"></i> {{ metrics.profit_margin }}%</span>
+            <span style="color:var(--text-muted)">profit margin</span>
+        </div>
+    </div>
+
+    <div class="glass-card metric-card">
+        <div class="metric-header">
+            <span class="metric-title">Pending Invoices</span>
+            <div class="metric-icon" style="color:var(--accent-amber); background:rgba(245, 158, 11, 0.1);"><i
+                    class="bi bi-clock-history"></i></div>
+        </div>
+        <div class="metric-value">{{ metrics.pending_invoices_amount | inr }}</div>
+        <div class="metric-footer">
+            <span class="trend-down"><i class="bi bi-exclamation-circle"></i> {{ metrics.pending_invoices_count }}
+                unpaid</span>
+            <span style="color:var(--text-muted)">invoices</span>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Signature Feature: Today's AI Priorities -->
+<div class="grid-2">
+    <div class="glass-card" style="border-left:4px solid var(--accent-cyan);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <h3 style="font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <i class="bi bi-lightning-charge-fill" style="color:var(--accent-cyan);"></i>
+                What should I focus on today?
+            </h3>
+            <span
+                style="font-size:11px; background:rgba(0,242,254,0.15); color:var(--accent-cyan); padding:3px 10px; border-radius:var(--radius-full); font-weight:700;">AI
+                GENERATED</span>
+        </div>
+
+        <div id="aiPrioritiesContainer">
+            {% for item in priorities %}
+            <div class="priority-item">
+                <span class="priority-badge badge-{{ item.badge | lower }}">{{ item.badge }}</span>
+                <div style="flex:1;">
+                    <div style="font-weight:700; font-size:14px; color:var(--text-primary);">{{ item.title }}</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Reason: {{ item.reason }}
+                    </div>
+                </div>
+                <a href="{{ item.link }}" class="btn btn-secondary" style="padding:6px 12px; font-size:12px;">
+                    {{ item.action }} <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- AI Advisor Insight Box -->
+    <div class="glass-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <span class="section-tag"><i class="bi bi-cpu"></i> AI STRATEGIC INSIGHT</span>
+                <span style="font-size:12px; color:var(--text-muted);">Scikit-learn Forecast Engine</span>
+            </div>
+
+            <p style="font-size:14px; font-weight:600; line-height:1.5; color:var(--text-primary); margin-bottom:12px;">
+                {{ sales_ml.explanation }}
+            </p>
+
+            <div
+                style="background:rgba(255,255,255,0.03); border:1px solid var(--border-glass); padding:12px; border-radius:var(--radius-sm); font-size:13px; color:var(--text-secondary);">
+                <i class="bi bi-info-circle" style="color:var(--accent-cyan);"></i> <b>Estimate:</b> Next month
+                predicted sales = <b>{{ sales_ml.predicted_sales | inr }}</b>.
+            </div>
+        </div>
+
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <a href="{{ url_for('ai_advisor') }}" class="btn btn-primary" style="flex:1; justify-content:center;">
+                <i class="bi bi-chat-dots-fill"></i> Open AI Business Advisor
+            </a>
+            <a href="{{ url_for('sales') }}" class="btn btn-secondary" style="flex:1; justify-content:center;">
+                <i class="bi bi-graph-up"></i> Sales Ledger
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Charts Section -->
+<div class="grid-2">
+    <div class="glass-card">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-graph-up" style="color:var(--accent-cyan);"></i> Sales Trend & ML Prediction
+        </h3>
+        <div style="height:260px;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-pie-chart" style="color:var(--accent-purple);"></i> Expense Breakdown
+        </h3>
+        <div style="height:260px;">
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Sales Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        const historicalMonths = {{ sales_ml.historical_months | tojson
+    }};
+    const historicalAmounts = {{ sales_ml.historical_amounts | tojson }};
+
+    // Add prediction
+    const labels = [...historicalMonths, 'Next Month (Predicted)'];
+    const data = [...historicalAmounts, {{ sales_ml.predicted_sales }}];
+
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Monthly Revenue (₹)',
+                data: data,
+                borderColor: '#00f2fe',
+                backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: ['#00f2fe', '#00f2fe', '#00f2fe', '#00f2fe', '#00f2fe', '#10b981'],
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+            }
+        }
+    });
+
+    // 2. Expense Chart
+    const expCtx = document.getElementById('expenseChart').getContext('2d');
+    const expCategories = {{ exp_ml.by_category.keys() | list | tojson }};
+    const expAmounts = {{ exp_ml.by_category.values() | list | tojson }};
+
+    new Chart(expCtx, {
+        type: 'doughnut',
+        data: {
+            labels: expCategories,
+            datasets: [{
+                data: expAmounts,
+                backgroundColor: ['#00f2fe', '#38bdf8', '#818cf8', '#6366f1', '#f59e0b', '#f43f5e']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 12 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

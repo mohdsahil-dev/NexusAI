@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NexusAI - Your AI Employee for Business{% endblock %}</title>
+    <meta name="description" content="NexusAI is an AI-powered Business Operating System for Small and Medium Enterprises (SMEs).">
+
+    <!-- Bootstrap Icons & Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js & Marked.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand-header">
+                <div class="brand-logo-wrapper">
+                    <svg class="brand-logo-svg" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="logo-orbit" cx="22" cy="22" r="18" stroke="url(#logo_grad_1)" stroke-width="2" stroke-dasharray="8 4"/>
+                        <circle class="logo-core" cx="22" cy="22" r="10" fill="url(#logo_grad_2)"/>
+                        <path d="M17 22L21 26L27 18" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="logo_grad_1" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#2563eb"/>
+                                <stop offset="0.5" stop-color="#3b82f6"/>
+                                <stop offset="1" stop-color="#4f46e5"/>
+                            </linearGradient>
+                            <linearGradient id="logo_grad_2" x1="12" y1="12" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#2563eb"/>
+                                <stop offset="1" stop-color="#4f46e5"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="logo-glow-ring"></div>
+                </div>
+                <div>
+                    <div class="brand-text">NexusAI</div>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Core Operations</div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2-fill"></i> OS Dashboard</a></li>
+                    <li>
+                        <a href="{{ url_for('ai_advisor') }}" class="nav-link {% if request.path == '/ai' %}active{% endif %}">
+                            <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 23px; height: 23px; flex-shrink: 0; margin-left: -2px; margin-right: -1px;">
+                                <circle cx="22" cy="22" r="18" stroke="url(#nav_grad_1)" stroke-width="2" stroke-dasharray="8 4"/>
+                                <circle cx="22" cy="22" r="10" fill="url(#nav_grad_2)"/>
+                                <path d="M17 22L21 26L27 18" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <defs>
+                                    <linearGradient id="nav_grad_1" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#2563eb"/>
+                                        <stop offset="0.5" stop-color="#3b82f6"/>
+                                        <stop offset="1" stop-color="#4f46e5"/>
+                                    </linearGradient>
+                                    <linearGradient id="nav_grad_2" x1="12" y1="12" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#2563eb"/>
+                                        <stop offset="1" stop-color="#4f46e5"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            AI Business Advisor
+                        </a>
+                    </li>
+                    <li><a href="{{ url_for('meetings') }}" class="nav-link {% if request.path == '/meetings' %}active{% endif %}"><i class="bi bi-mic-fill"></i> Meeting Summarizer</a></li>
+                    <li><a href="{{ url_for('invoices') }}" class="nav-link {% if request.path == '/invoices' %}active{% endif %}"><i class="bi bi-file-earmark-pdf-fill"></i> Invoices & PDF</a></li>
+                    <li><a href="{{ url_for('emails') }}" class="nav-link {% if request.path == '/emails' %}active{% endif %}"><i class="bi bi-envelope-paper-fill"></i> AI Email Writer</a></li>
+                </ul>
+
+                <div class="nav-label">Management Modules</div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('sales') }}" class="nav-link {% if request.path == '/sales' %}active{% endif %}"><i class="bi bi-graph-up-arrow"></i> Sales & Predictions</a></li>
+                    <li><a href="{{ url_for('inventory') }}" class="nav-link {% if request.path == '/inventory' %}active{% endif %}"><i class="bi bi-box-seam-fill"></i> Inventory Forecast</a></li>
+                    <li><a href="{{ url_for('expenses') }}" class="nav-link {% if request.path == '/expenses' %}active{% endif %}"><i class="bi bi-wallet2"></i> Expense Analyzer</a></li>
+                    <li><a href="{{ url_for('customers') }}" class="nav-link {% if request.path == '/customers' %}active{% endif %}"><i class="bi bi-people-fill"></i> Customer CRM</a></li>
+                    <li><a href="{{ url_for('hr') }}" class="nav-link {% if request.path == '/hr' %}active{% endif %}"><i class="bi bi-person-badge-fill"></i> HR & Employees</a></li>
+                    <li><a href="{{ url_for('tasks') }}" class="nav-link {% if request.path == '/tasks' %}active{% endif %}"><i class="bi bi-check2-square"></i> Tasks Board</a></li>
+                </ul>
+
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <!-- 3-Line Hamburger Menu Button (Toggle Navigation Modules) -->
+                    <button class="btn-icon" id="sidebarToggleBtn" title="Toggle Modules Navigation Menu">
+                        <i class="bi bi-list" style="font-size:24px;"></i>
+                    </button>
+
+                    <div class="topbar-search">
+                        <i class="bi bi-search" style="color:var(--text-muted)"></i>
+                        <input type="text" id="globalSearchInput" placeholder="Ask AI: 'Show today sales', 'Create invoice', 'Why sales decreased?'">
+                    </div>
+                </div>
+
+                <div class="topbar-actions">
+                    <!-- Hidden Theme Toggle for JS Handler -->
+                    <button id="themeToggleBtn" style="display:none;"></button>
+
+                    <!-- Notifications Link -->
+                    <a href="{{ url_for('notifications') }}" class="btn-icon" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="badge-count">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Circular 3-Dots Button (Opens System Settings & Dark Mode) -->
+                    <button class="btn-icon-circle-3dots" onclick="toggleThreeDotsMenu(event)" title="System & App Options">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+
+                    <!-- User Profile Avatar Circle (Opens User Info & Sign Out) -->
+                    <button class="topbar-user-avatar" onclick="toggleProfileMenu(event)" title="Logged in as: {{ session.get('username', 'User') }}">
+                        {{ session.get('username', 'U')[0].upper() }}
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Page Content -->
+            <main class="page-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- 3-Dots Dropdown Menu (System Settings & Dark Mode ONLY) -->
+    <div id="threeDotsDropdownMenu" style="display:none; position:fixed; z-index:9999; width:180px; background:var(--bg-card); border:1px solid var(--border-glass); border-radius:var(--radius-sm); box-shadow:0 10px 30px rgba(0,0,0,0.5); backdrop-filter:blur(12px); padding:6px 0;">
+        <a href="{{ url_for('settings') }}" class="dropdown-menu-item"><i class="bi bi-gear-fill" style="color:var(--accent-cyan);"></i> System Settings</a>
+        <div style="height:1px; background:var(--border-glass); margin:4px 0;"></div>
+        <div onclick="document.getElementById('themeToggleBtn').click()" class="dropdown-menu-item" style="cursor:pointer;"><i class="bi bi-moon-stars-fill" style="color:var(--accent-purple);"></i> Dark Mode</div>
+    </div>
+
+    <!-- User Profile Dropdown Menu (User Info & Sign Out ONLY) -->
+    <div id="profileDropdownMenu" style="display:none; position:fixed; z-index:9999; width:200px; background:var(--bg-card); border:1px solid var(--border-glass); border-radius:var(--radius-sm); box-shadow:0 10px 30px rgba(0,0,0,0.5); backdrop-filter:blur(12px); padding:8px 0;">
+        <div style="padding:6px 14px 8px 14px; border-bottom:1px solid var(--border-glass); margin-bottom:4px;">
+            <div style="font-size:13px; font-weight:800; color:var(--text-primary);"><i class="bi bi-person-circle" style="color:var(--accent-cyan);"></i> {{ session.get('username', 'User') }}</div>
+            <div style="font-size:10px; color:var(--text-muted);">{{ session.get('role', 'Administrator') }}</div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="dropdown-menu-item" style="color:var(--accent-rose);"><i class="bi bi-box-arrow-right"></i> Sign Out</a>
+    </div>
+
+    <!-- ChatGPT-Style Live Voice Assistant Overlay Modal -->
+    <div id="voiceAssistantModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(10, 15, 30, 0.92); backdrop-filter:blur(18px); z-index:99999; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center;">
+        <!-- Close Button -->
+        <button onclick="closeVoiceAssistant()" style="position:absolute; top:28px; right:28px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:24px; width:44px; height:44px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s ease;">&times;</button>
+
+        <!-- Voice Status Header -->
+        <div style="font-size:14px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:1px; margin-bottom:28px;" id="voiceStatusBadge">
+            <i class="bi bi-mic-fill" style="margin-right:6px;"></i> ChatGPT Voice Mode Active
+        </div>
+
+        <!-- Glowing Animated Voice Sphere -->
+        <div id="voiceOrb" onclick="toggleVoiceListeningState()" style="width:120px; height:120px; border-radius:50%; background:radial-gradient(circle, #3b82f6 0%, #1d4ed8 70%, #000 100%); box-shadow:0 0 40px rgba(59,130,246,0.6); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s ease; margin-bottom:32px; animation: voicePulse 2s infinite ease-in-out;">
+            <i class="bi bi-mic-fill" id="voiceOrbIcon" style="font-size:44px; color:#ffffff;"></i>
+        </div>
+
+        <!-- Real-time Transcript & AI Speech Box -->
+        <div style="max-width:580px; width:100%; margin-bottom:24px;">
+            <div id="voiceTranscriptText" style="font-size:16px; font-weight:600; color:#e2e8f0; min-height:48px; margin-bottom:12px; line-height:1.5;">
+                "Listening... Speak your query to NexusAI Voice Bot"
+            </div>
+            <div id="voiceAiResponseText" style="font-size:14px; color:var(--accent-cyan); line-height:1.6; max-height:180px; overflow-y:auto; padding:14px; background:rgba(255,255,255,0.06); border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.12); display:none;"></div>
+        </div>
+
+        <!-- Fallback Quick Command Input (Appears if mic is blocked) -->
+        <div id="voiceFallbackContainer" style="display:none; gap:10px; max-width:480px; width:100%; margin-top:10px;">
+            <input type="text" id="voiceModalTextInput" class="form-control" placeholder="Type your query here..." style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.25); color:#fff;">
+            <button onclick="submitVoiceModalQuery()" class="btn btn-primary" style="padding:0 22px;">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Global App JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

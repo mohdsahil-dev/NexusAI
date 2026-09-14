@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block title %}Inventory Forecast - NexusAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Inventory Control & Stockout Forecasting</h1>
+        <p class="page-subtitle">Calculate stock velocity, days until stockout, and automated reorder points.</p>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Min Level</th>
+                    <th>Avg Daily Sales</th>
+                    <th>Est. Stockout</th>
+                    <th>Status</th>
+                    <th>Recommended Reorder</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in forecast %}
+                <tr>
+                    <td style="font-weight:700; color:var(--text-primary);">{{ item.product_name }}</td>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ item.category }}</td>
+                    <td style="font-weight:700; font-size:14px;">{{ item.stock_quantity }} units</td>
+                    <td style="color:var(--text-muted);">{{ item.min_stock_level }} units</td>
+                    <td>{{ item.avg_daily_sales }} / day</td>
+                    <td style="font-weight:700; color:{% if item.status == 'Critical' %}var(--accent-rose){% elif item.status == 'Warning' %}var(--accent-amber){% else %}var(--accent-emerald){% endif %};">
+                        {{ item.estimated_days_to_stockout }} days
+                    </td>
+                    <td>
+                        <span class="priority-badge {% if item.status == 'Critical' %}badge-urgent{% elif item.status == 'Warning' %}badge-high{% else %}badge-low{% endif %}">
+                            {{ item.status }}
+                        </span>
+                    </td>
+                    <td style="font-weight:700; color:var(--accent-cyan);">+{{ item.recommended_reorder }} units</td>
+                    <td>
+                        {% if item.recommended_reorder > 0 %}
+                        <button onclick="createReorderTask('{{ item.product_name }}', {{ item.recommended_reorder }})" class="btn btn-secondary" style="padding:4px 10px; font-size:11px;">
+                            <i class="bi bi-cart-plus"></i> Order Stock
+                        </button>
+                        {% else %}
+                        <span style="font-size:12px; color:var(--text-muted);">Stock Optimal</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function createReorderTask(productName, qty) {
+    const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: `Reorder Stock: ${productName} (+${qty} units)`,
+            description: `Automated reorder task generated from Inventory Forecast module.`,
+            priority: 'Urgent',
+            assigned_to: 'Operations',
+            source: 'Low Stock'
+        })
+    });
+    const data = await res.json();
+    alert(`Reorder purchase task created for ${productName} (+${qty} units)!`);
+    window.location.href = '/tasks';
+}
+</script>
+{% endblock %}

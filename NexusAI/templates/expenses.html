@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}Expense Analyzer - NexusAI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div>
+        <h1 class="page-title">Expense Analyzer & Cost Optimization</h1>
+        <p class="page-subtitle">Track operational spend, detect expense anomalies, and execute cost savings.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="document.getElementById('addExpenseModal').style.display='flex'">
+            <i class="bi bi-plus-lg"></i> Record New Expense
+        </button>
+    </div>
+</div>
+
+<!-- Savings Recommendations Card -->
+<div class="grid-2">
+    <div class="glass-card" style="border-left:4px solid var(--accent-rose);">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-exclamation-triangle-fill" style="color:var(--accent-rose);"></i> Expense Anomaly Spikes
+        </h3>
+        {% for a in analysis.anomalies %}
+        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-glass); padding:12px; border-radius:var(--radius-sm); margin-bottom:10px;">
+            <div style="font-weight:700; color:var(--accent-rose); font-size:13px;">{{ a.category }} Spend Alert</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">{{ a.observation }}</div>
+        </div>
+        {% else %}
+        <div style="font-size:13px; color:var(--text-muted);">No critical expense anomalies detected.</div>
+        {% endfor %}
+    </div>
+
+    <div class="glass-card" style="border-left:4px solid var(--accent-emerald);">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-piggy-bank-fill" style="color:var(--accent-emerald);"></i> AI Savings Recommendations
+        </h3>
+        {% for s in analysis.savings_recommendations %}
+        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-glass); padding:12px; border-radius:var(--radius-sm); margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px;">
+                <span>{{ s.area }}</span>
+                <span style="color:var(--accent-emerald);">Save ~{{ s.potential_saving | inr }}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">{{ s.recommendation }}</div>
+        </div>
+        {% else %}
+        <div style="font-size:13px; color:var(--text-muted);">Operating expenses are optimized.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Expense Table -->
+<div class="glass-card">
+    <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Expense Transaction Ledger</h3>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Vendor</th>
+                    <th>Payment Method</th>
+                    <th>Amount (₹)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in expenses %}
+                <tr>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ e.expense_date.strftime('%b %d, %Y') if e.expense_date else '' }}</td>
+                    <td style="font-weight:600; color:var(--accent-cyan);">{{ e.category }}</td>
+                    <td style="font-size:13px; color:var(--text-primary);">{{ e.description }}</td>
+                    <td style="font-size:12px; color:var(--text-secondary);">{{ e.vendor or '-' }}</td>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ e.payment_method }}</td>
+                    <td style="font-weight:700;">{{ e.amount | inr }}</td>
+                    <td><span class="priority-badge badge-low">{{ e.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">No operational expenses logged yet. Click <b>Record New Expense</b> above to log your first cost entry!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Record New Expense -->
+<div id="addExpenseModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:999; align-items:center; justify-content:center;">
+    <div class="glass-card" style="width:100%; max-width:520px; padding:28px; background:var(--bg-card); border:1px solid var(--border-glass);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:800; color:var(--text-primary);"><i class="bi bi-wallet2" style="color:var(--accent-blue);"></i> Record Operational Expense</h2>
+            <button style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;" onclick="document.getElementById('addExpenseModal').style.display='none'">&times;</button>
+        </div>
+
+        <form action="{{ url_for('add_expense') }}" method="POST">
+            <div style="margin-bottom:14px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Expense Category *</label>
+                <select name="category" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                    <option value="Software & Cloud">Software & Cloud Services (AWS, SaaS)</option>
+                    <option value="Marketing & Ads">Marketing & Ad Spend (Google/Meta Ads)</option>
+                    <option value="Rent & Utilities">Office Rent & Utilities</option>
+                    <option value="Hardware & Equipment">Hardware & Equipment</option>
+                    <option value="Travel & Transport">Travel & Logistics</option>
+                    <option value="General Operations">General Operations</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Expense Description *</label>
+                <input type="text" name="description" required placeholder="e.g. Server Hosting & Cloud Infrastructure" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Vendor / Payee</label>
+                    <input type="text" name="vendor" placeholder="e.g. Amazon Web Services" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Amount (₹) *</label>
+                    <input type="number" step="0.01" name="amount" value="15000" required style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Payment Method</label>
+                    <select name="payment_method" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                        <option value="Corporate Credit Card">Corporate Credit Card</option>
+                        <option value="UPI / Bank Transfer">UPI / Bank Transfer</option>
+                        <option value="Net Banking">Net Banking</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Expense Date</label>
+                    <input type="date" name="expense_date" required style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('addExpenseModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Expense Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.querySelector('input[name="expense_date"]');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+    });
+</script>
+{% endblock %}

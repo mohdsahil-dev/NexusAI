@@ -1,0 +1,215 @@
+{% extends "layout.html" %}
+
+{% block title %}Meeting Summarizer - NexusAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Meeting Summarizer</h1>
+        <p class="page-subtitle">Paste transcript -> AI extracts Key Decisions, Action Items & converts them to Tasks.</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Input Form -->
+    <div class="glass-card">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-card-text" style="color:var(--accent-cyan);"></i> Paste Transcript
+        </h3>
+
+        <div style="margin-bottom:14px;">
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Meeting Title</label>
+            <input type="text" id="meetingTitle" class="form-control" value="Q3 Regional Sales & Supply Chain Review">
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Raw Transcript</label>
+            <textarea id="meetingTranscript" class="form-control" rows="10" placeholder="Paste meeting notes or conversation transcript here...">
+Participant 1 (CEO Rajesh): Team, let's review Q3 performance. North India sales showed an 18% drop compared to South India.
+Participant 2 (Sales Lead Priya): Correct. We faced delays in shipping Dell Inspiron laptops and Server Racks due to logistics bottlenecks in Gurgaon hub.
+Participant 3 (Ops Lead Rohan): We must onboard an additional regional logistics carrier in Gurgaon by next week to eliminate delays.
+Participant 1 (CEO Rajesh): Agreed. Priya will follow up on the 3 overdue enterprise invoices exceeding ₹1.5 Lakhs. Rohan will initiate restocking for Dell Inspiron 15 and Server Racks immediately.
+            </textarea>
+        </div>
+
+        <button id="btnSummarizeMeeting" onclick="summarizeMeetingHandler()" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+            <i class="bi bi-cpu-fill"></i> Summarize & Extract Action Items
+        </button>
+    </div>
+
+    <!-- Output AI Result Card -->
+    <div class="glass-card" id="meetingOutputCard">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-robot" style="color:var(--accent-purple);"></i> AI Meeting Summary
+        </h3>
+
+        <div id="meetingResultContent">
+            <div style="color:var(--text-muted); font-size:13px; text-align:center; padding:40px 0;">
+                <i class="bi bi-file-earmark-text" style="font-size:36px; opacity:0.5; display:block; margin-bottom:8px;"></i>
+                Click "Summarize & Extract Action Items" to generate structured summary.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Past Meetings Log -->
+<div class="glass-card" style="margin-top:24px;">
+    <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Past Saved Meetings</h3>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Meeting Title</th>
+                    <th>Executive Summary</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in meetings %}
+                <tr>
+                    <td style="white-space:nowrap; font-size:12px; color:var(--text-muted);">{{ m.meeting_date.strftime('%b %d, %Y') }}</td>
+                    <td style="font-weight:600; color:var(--text-primary);">{{ m.title }}</td>
+                    <td style="font-size:12px; color:var(--text-secondary);">{{ m.summary }}</td>
+                    <td>
+                        <button onclick="openMeetingModal(`{{ m.title|replace('`', '') }}`, `{{ m.meeting_date.strftime('%b %d, %Y') }}`, `{{ m.summary|replace('`', '') }}`, `{{ m.key_decisions|replace('`', '') }}`, `{{ m.transcript|replace('`', '') }}`)" class="btn btn-secondary" style="padding:5px 12px; font-size:11px; white-space:nowrap;">
+                            <i class="bi bi-file-earmark-text-fill" style="color:var(--accent-cyan);"></i> View Raw Transcript & Details
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">No saved meetings found. Summarize a transcript above to log your first meeting!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: View Full Meeting Details & Raw Transcript -->
+<div id="meetingDetailsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:999; align-items:center; justify-content:center;">
+    <div class="glass-card" style="width:100%; max-width:680px; max-height:85vh; overflow-y:auto; padding:28px; background:var(--bg-card); border:1px solid var(--border-glass);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <h2 id="modalMeetingTitle" style="font-size:18px; font-weight:800; color:var(--text-primary);">Meeting Details</h2>
+            <button style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;" onclick="document.getElementById('meetingDetailsModal').style.display='none'">&times;</button>
+        </div>
+
+        <div style="font-size:12px; font-weight:700; color:var(--accent-cyan); margin-bottom:16px;" id="modalMeetingDate"></div>
+
+        <div style="margin-bottom:16px;">
+            <span class="section-tag">📌 EXECUTIVE SUMMARY</span>
+            <p id="modalMeetingSummary" style="font-size:13px; color:var(--text-primary); margin-top:4px; font-weight:600; line-height:1.5;"></p>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <span class="section-tag">📋 KEY DECISIONS</span>
+            <p id="modalMeetingDecisions" style="font-size:13px; color:var(--text-secondary); white-space:pre-line; margin-top:4px; line-height:1.5;"></p>
+        </div>
+
+        <div>
+            <span class="section-tag">📄 RAW MEETING TRANSCRIPT</span>
+            <div id="modalMeetingTranscript" style="margin-top:6px; padding:14px; background:var(--bg-card-hover); border:1px solid var(--border-glass); border-radius:var(--radius-sm); font-size:12px; color:var(--text-secondary); white-space:pre-wrap; max-height:220px; overflow-y:auto; font-family:var(--font-mono); line-height:1.6;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-secondary" onclick="document.getElementById('meetingDetailsModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let lastExtractedActionItems = [];
+
+function openMeetingModal(title, dateStr, summary, decisions, transcript) {
+    document.getElementById('modalMeetingTitle').innerText = title || 'Meeting Details';
+    document.getElementById('modalMeetingDate').innerText = '📅 Recorded Date: ' + (dateStr || 'N/A');
+    document.getElementById('modalMeetingSummary').innerText = summary || 'No summary recorded.';
+    document.getElementById('modalMeetingDecisions').innerText = decisions || 'No key decisions recorded.';
+    document.getElementById('modalMeetingTranscript').innerText = transcript || 'No raw transcript recorded.';
+    document.getElementById('meetingDetailsModal').style.display = 'flex';
+}
+
+async function summarizeMeetingHandler() {
+    const title = document.getElementById('meetingTitle').value.trim();
+    const transcript = document.getElementById('meetingTranscript').value.trim();
+    const btn = document.getElementById('btnSummarizeMeeting');
+    const outputContainer = document.getElementById('meetingResultContent');
+
+    if (!transcript) {
+        alert('Please enter or paste a meeting transcript.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="bi bi-cpu spin"></i> Extracting Action Items...`;
+
+    try {
+        const res = await fetch('/api/ai/summarize-meeting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, transcript })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-cpu-fill"></i> Summarize & Extract Action Items`;
+
+        lastExtractedActionItems = data.action_items || [];
+
+        let actionItemsList = lastExtractedActionItems.map(item => 
+            `<li style="margin-bottom:6px;"><b>${escapeHtml(item.title)}</b> — Assigned to: <span style="color:var(--accent-cyan);">${escapeHtml(item.assignee)}</span> [${item.priority}]</li>`
+        ).join('');
+
+        outputContainer.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <span class="section-tag">📌 EXECUTIVE SUMMARY</span>
+                    <p style="font-size:14px; font-weight:600; margin-top:4px;">${escapeHtml(data.summary)}</p>
+                </div>
+                <div>
+                    <span class="section-tag">📋 KEY DECISIONS</span>
+                    <p style="font-size:13px; color:var(--text-secondary); white-space:pre-line; margin-top:4px;">${escapeHtml(data.key_decisions)}</p>
+                </div>
+                <div>
+                    <span class="section-tag">⚡ EXTRACTED ACTION ITEMS</span>
+                    <ul style="font-size:13px; color:var(--text-secondary); margin-top:6px; padding-left:18px;">
+                        ${actionItemsList}
+                    </ul>
+                </div>
+                <button onclick="convertActionItemsToTasks()" class="btn btn-primary" style="margin-top:10px; width:100%; justify-content:center;">
+                    <i class="bi bi-check2-all"></i> Convert Action Items into Tasks
+                </button>
+            </div>
+        `;
+    } catch (e) {
+        console.error(e);
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-cpu-fill"></i> Summarize & Extract Action Items`;
+    }
+}
+
+async function convertActionItemsToTasks() {
+    if (!lastExtractedActionItems || lastExtractedActionItems.length === 0) return;
+
+    for (const item of lastExtractedActionItems) {
+        await fetch('/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: item.title,
+                description: `Created from AI Meeting Summarizer`,
+                priority: item.priority || 'High',
+                assigned_to: item.assignee || 'Operations',
+                source: 'AI Meeting'
+            })
+        });
+    }
+
+    alert('Successfully converted all meeting action items into executable Tasks!');
+    window.location.href = '/tasks';
+}
+</script>
+{% endblock %}

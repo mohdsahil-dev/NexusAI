@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block title %}Tasks Board - NexusAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Operational Tasks Board</h1>
+        <p class="page-subtitle">Track AI-generated and manual business action items.</p>
+    </div>
+    <button onclick="openTaskModal()" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Create Task
+    </button>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Task Title</th>
+                    <th>Source</th>
+                    <th>Priority</th>
+                    <th>Assigned To</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tasks %}
+                <tr>
+                    <td style="font-weight:700; color:var(--text-primary);">
+                        <div>{{ t.title }}</div>
+                        <div style="font-size:11px; color:var(--text-muted); font-weight:normal;">{{ t.description }}</div>
+                    </td>
+                    <td><span class="section-tag" style="font-size:10px;">{{ t.source }}</span></td>
+                    <td>
+                        <span class="priority-badge {% if t.priority == 'Urgent' %}badge-urgent{% elif t.priority == 'High' %}badge-high{% else %}badge-medium{% endif %}">
+                            {{ t.priority }}
+                        </span>
+                    </td>
+                    <td style="font-size:12px; color:var(--accent-cyan);">{{ t.assigned_employee.full_name if t.assigned_employee else 'Operations' }}</td>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ t.due_date.strftime('%b %d, %Y') if t.due_date else '' }}</td>
+                    <td>
+                        <span class="priority-badge {% if t.status == 'Completed' %}badge-low{% elif t.status == 'In Progress' %}badge-medium{% else %}badge-high{% endif %}">
+                            {{ t.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if t.status != 'Completed' %}
+                        <button onclick="updateTaskStatus({{ t.id }}, 'Completed')" class="btn btn-primary" style="padding:4px 10px; font-size:11px; background:var(--accent-emerald);">
+                            <i class="bi bi-check-lg"></i> Complete
+                        </button>
+                        {% else %}
+                        <span style="font-size:12px; color:var(--text-muted);"><i class="bi bi-check-circle-fill" style="color:var(--accent-emerald);"></i> Done</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Task Modal -->
+<div class="modal-overlay" id="taskModal">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="font-size:18px; font-weight:800;">Create Operational Task</h3>
+            <button onclick="closeTaskModal()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:20px;"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form onsubmit="handleTaskSubmit(event)">
+            <div class="form-group">
+                <label>Task Title</label>
+                <input type="text" id="taskTitleInput" class="form-control" placeholder="e.g. Audit Q3 Logistics Contracts" required>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="taskDescInput" class="form-control" rows="3" placeholder="Provide context or instructions..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Priority</label>
+                <select id="taskPrioritySelect" class="form-control">
+                    <option value="Urgent">Urgent</option>
+                    <option value="High" selected>High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Assignee Department / Employee</label>
+                <select id="taskAssigneeSelect" class="form-control" style="margin-bottom:8px;">
+                    <option value="Operations">Operations Team</option>
+                    <option value="Sales">Sales & Marketing</option>
+                    <option value="Engineering">Engineering & Software</option>
+                    <option value="HR">HR & Operations</option>
+                    <option value="Finance">Finance & Accounts</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.first_name }}">{{ emp.full_name }} ({{ emp.department }})</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="taskAssigneeTextInput" class="form-control" placeholder="✍️ OR Type Custom Assignee / Person Name">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                <button type="button" onclick="closeTaskModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Save Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openTaskModal() { document.getElementById('taskModal').classList.add('active'); }
+function closeTaskModal() { document.getElementById('taskModal').classList.remove('active'); }
+
+async function handleTaskSubmit(e) {
+    e.preventDefault();
+    const title = document.getElementById('taskTitleInput').value.trim();
+    const description = document.getElementById('taskDescInput').value.trim();
+    const priority = document.getElementById('taskPrioritySelect').value;
+    const customAssignee = document.getElementById('taskAssigneeTextInput').value.trim();
+    const selectAssignee = document.getElementById('taskAssigneeSelect').value;
+
+    const assigned_to = customAssignee || selectAssignee || 'Operations';
+
+    const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, priority, assigned_to, source: 'Manual' })
+    });
+    const data = await res.json();
+    if (data.task_id) {
+        window.location.reload();
+    }
+}
+
+async function updateTaskStatus(taskId, status) {
+    const res = await fetch(`/api/tasks/${taskId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+        window.location.reload();
+    }
+}
+</script>
+{% endblock %}

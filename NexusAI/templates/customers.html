@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}Customer CRM - NexusAI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div>
+        <h1 class="page-title">Customer Relationship Management (CRM)</h1>
+        <p class="page-subtitle">Manage client profiles, transaction history, and lead pipelines.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="document.getElementById('addCustomerModal').style.display='flex'">
+            <i class="bi bi-person-plus"></i> Add New Customer
+        </button>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Company Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Location</th>
+                    <th>Total Lifetime Value (₹)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in customers %}
+                <tr>
+                    <td style="font-weight:600; color:var(--text-primary);">{{ c.name }}</td>
+                    <td style="color:var(--accent-cyan);">{{ c.company_name or 'Independent' }}</td>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ c.email }}</td>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ c.phone }}</td>
+                    <td style="font-size:12px; color:var(--text-secondary);">{{ c.city }}, {{ c.state }}</td>
+                    <td style="font-weight:700;">{{ c.total_spent | inr }}</td>
+                    <td>
+                        <span class="priority-badge {% if c.status == 'Active' %}badge-low{% elif c.status == 'Lead' %}badge-medium{% else %}badge-urgent{% endif %}">
+                            {{ c.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">No customers found yet. Click <b>Add New Customer</b> above to create your first client record!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add New Customer -->
+<div id="addCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:999; align-items:center; justify-content:center;">
+    <div class="glass-card" style="width:100%; max-width:520px; padding:28px; background:var(--bg-card); border:1px solid var(--border-glass);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:800; color:var(--text-primary);"><i class="bi bi-person-plus" style="color:var(--accent-blue);"></i> Add New Customer Profile</h2>
+            <button style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;" onclick="document.getElementById('addCustomerModal').style.display='none'">&times;</button>
+        </div>
+
+        <form action="{{ url_for('add_customer') }}" method="POST">
+            <div style="margin-bottom:14px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Customer Full Name *</label>
+                <input type="text" name="name" required placeholder="e.g. Rahul Sharma" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Company / Business Name</label>
+                <input type="text" name="company_name" placeholder="e.g. Sharma Enterprises Ltd" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Email Address</label>
+                    <input type="email" name="email" placeholder="rahul@sharma.in" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">Phone Number</label>
+                    <input type="text" name="phone" placeholder="+91 98765 43210" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">City</label>
+                    <input type="text" name="city" placeholder="Bengaluru" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">State</label>
+                    <input type="text" name="state" placeholder="Karnataka" style="width:100%; padding:10px; background:var(--bg-card-hover); border:1px solid var(--border-glass); color:var(--text-primary); border-radius:var(--radius-sm);">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('addCustomerModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Create Customer Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI - Your AI Employee for Business</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .landing-hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle at 50% 30%, rgba(0, 242, 254, 0.12) 0%, rgba(6, 9, 19, 1) 70%);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid var(--border-glow);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            max-width: 900px;
+            letter-spacing: -1.5px;
+        }
+
+        .hero-title span {
+            background: var(--gradient-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .features-grid {
+            max-width: 1100px;
+            margin: 60px auto 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="landing-hero">
+        <div class="hero-badge">
+            <i class="bi bi-cpu-fill"></i> Business Operating System for SMEs
+        </div>
+
+        <h1 class="hero-title">
+            Less Software More Work Done<br /> <span>Meet</span> NexusAI</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            NexusAI transforms fragmented SME tools into one intelligent Business Operating System. From sales forecasts
+            and automated PDF invoicing to voice commands and daily priority management.
+        </p>
+
+        <div class="hero-cta">
+            <button onclick="triggerDemoLogin()" class="btn btn-primary" style="padding:14px 28px; font-size:15px;">
+                <i class="bi bi-rocket-takeoff-fill"></i> Launch Instant Demo
+            </button>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary" style="padding:14px 28px; font-size:15px;">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+        </div>
+
+        <div class="features-grid">
+            <div class="glass-card">
+                <i class="bi bi-robot" style="font-size:32px; color:var(--accent-cyan);"></i>
+                <h3 style="margin:16px 0 8px 0; font-size:18px;">AI Business Advisor</h3>
+                <p style="font-size:13px; color:var(--text-secondary);">Ask real-time questions about your SQLite
+                    database. Get structured INSIGHT, EVIDENCE, RECOMMENDATION, and ACTION.</p>
+            </div>
+            <div class="glass-card">
+                <i class="bi bi-file-earmark-pdf" style="font-size:32px; color:var(--accent-purple);"></i>
+                <h3 style="margin:16px 0 8px 0; font-size:18px;">Instant Invoice PDF</h3>
+                <p style="font-size:13px; color:var(--text-secondary);">Create branded PDF invoices instantly using
+                    ReportLab with GST calculations, payment terms, and downloadable files.</p>
+            </div>
+            <div class="glass-card">
+                <i class="bi bi-graph-up" style="font-size:32px; color:var(--accent-emerald);"></i>
+                <h3 style="margin:16px 0 8px 0; font-size:18px;">ML Sales & Inventory</h3>
+                <p style="font-size:13px; color:var(--text-secondary);">Scikit-learn linear regression predicts sales
+                    trends and calculates stockout velocities to prevent out-of-stock losses.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
